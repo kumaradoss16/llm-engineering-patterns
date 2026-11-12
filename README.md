@@ -1,4 +1,3 @@
-```markdown
 # LLM Engineering Patterns
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue.svg?logo=python)](https://www.python.org/)
