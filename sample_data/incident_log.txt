@@ -1,0 +1,11 @@
+Incident timeline:
+
+14:02 Deployment job started for payments-service version 2.7.1.
+14:04 PostgreSQL migration step timed out after 300 seconds.
+14:05 Application pods failed to connect to the database.
+14:06 Reverse proxy began returning HTTP 502 responses.
+14:08 On-call engineer inspected application logs and database connectivity.
+14:11 Database connection was restored after correcting a network policy rule.
+14:14 Application service was restarted.
+14:18 Redeployment completed successfully.
+14:20 HTTP 502 errors stopped.

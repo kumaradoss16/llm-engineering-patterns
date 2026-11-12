@@ -1,0 +1,1 @@
+"""Technical AI Application Patterns Lab."""
