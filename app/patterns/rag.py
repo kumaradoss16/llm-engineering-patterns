@@ -7,6 +7,7 @@ ingestion, indexing, retrieval, evaluation, and security controls.
 
 import json
 from dataclasses import dataclass
+from typing import Any
 
 from pydantic import ValidationError
 
@@ -35,17 +36,22 @@ class InMemoryKnowledgeBase:
             title: str,
             text: str,
             embedding_provider: OllamaEmbeddingProvider,
-            chunk_sizes: int = 800,
+            chunk_size: int = 800,
             overlap: int = 100,
+            **kwargs: Any,
     ) -> int:
         """Chunk a document, embed chunk, and store it in memory."""
+
+        # Support chunk_sizes as alias
+        if "chunk_sizes" in kwargs:
+            chunk_size = kwargs["chunk_sizes"]
 
         cleaned = text.strip()
 
         if not cleaned:
             raise RagError("Document text cannot be empty.")
 
-        if chunk_sizes <= overlap:
+        if chunk_size <= overlap:
             raise RagError("Chunk size must be greater than overlap.")
 
         chunks: list[DocumentChunk] = []
@@ -53,13 +59,12 @@ class InMemoryKnowledgeBase:
         chunk_number = 0
 
         while start < len(cleaned):
-            end = min(start + chunk_sizes, len(cleaned))
+            end = min(start + chunk_size, len(cleaned))
             chunk_text = cleaned[start:end].strip()
 
             if chunk_text:
                 embedding = embedding_provider.create_embedding(chunk_text)
                 chunk_number += 1
-
 
                 chunks.append(
                     DocumentChunk(
@@ -74,7 +79,7 @@ class InMemoryKnowledgeBase:
             if end >= len(cleaned):
                 break
 
-            start += chunk_sizes - overlap
+            start += chunk_size - overlap
         self.chunks.extend(chunks)
         return len(chunks)
 
@@ -97,7 +102,8 @@ class InMemoryKnowledgeBase:
         if len(question) > MAX_CONTENT_CHARACTERS:
             raise RagError("Question exceeds the allowed length.")
 
-        query_embedding = embedding_provider.create_embedding(question)   # embedding model converts the question into a vector.
+        query_embedding = embedding_provider.create_embedding(question)
+
         scored_chunks: list[RetrievedChunk] = []
 
         for chunk in self.chunks:
@@ -117,7 +123,7 @@ class InMemoryKnowledgeBase:
         scored_chunks.sort(key=lambda item: item.score, reverse=True)
         return scored_chunks[:top_k]
 
-# Convert the retrieved document chunks into a structured prompt that the generative model can understand.
+
 def build_rag_prompt(
     question: str,
     retrieved_chunks: list[RetrievedChunk],
@@ -135,30 +141,30 @@ def build_rag_prompt(
         context_parts.append(chunk_block)
         total_characters += len(chunk_block)
 
-        if not context_parts:
-            raise RagError("No retrieved context file within the context budget.")
+    if not context_parts:
+        raise RagError("No retrieved context file within the context budget.")
 
-        context = "\n".join(context_parts)
+    context = "\n".join(context_parts)
 
-        return (
-            "Answer the user question using only the provided context.\n\n"
-            "Rules:\n"
-            "- Do not use knowledge outside the provided context.\n"
-            "- If the context does not contain enough information, say that the "
-            "answer is not available in the provided sources.\n"
-            "- Do not invent commands, configuration values, or procedures.\n"
-            "- Return only valid JSON.\n"
-            "- Use this exact JSON shape:\n"
-            "{\n"
-            '  "answer": "<answer>",\n'
-            '  "sources": ["[1]"],\n'
-            '  "confidence": "high|medium|low"\n'
-            "}\n\n"
-            f"Context:\n{context}\n\n"
-            f"Question:\n{question}"
-        )
+    return (
+        "Answer the user question using only the provided context.\n\n"
+        "Rules:\n"
+        "- Do not use knowledge outside the provided context.\n"
+        "- If the context does not contain enough information, say that the "
+        "answer is not available in the provided sources.\n"
+        "- Do not invent commands, configuration values, or procedures.\n"
+        "- Return only valid JSON.\n"
+        "- Use this exact JSON shape:\n"
+        "{\n"
+        '  "answer": "<answer>",\n'
+        '  "sources": ["[1]"],\n'
+        '  "confidence": "high|medium|low"\n'
+        "}\n\n"
+        f"Context:\n{context}\n\n"
+        f"Question:\n{question}"
+    )
 
-# Connects the retrieval process with the LLM generation process.
+
 def answer_question(
         generator: BaseModelProvider,
         knowledge_base: InMemoryKnowledgeBase,
@@ -212,12 +218,3 @@ def answer_question(
         ) from exc
 
     return result, response, retrieved
-
-
-
-
-
-
-
-
-

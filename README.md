@@ -8,7 +8,7 @@
 
 A collection of foundational, test-driven LLM engineering patterns implemented in Python using local inference models via **Ollama**. 
 
-This repository bridges the gap between ad-hoc prompting and production-grade AI systems by enforcing **strict Pydantic schema validation**, **deterministic fallbacks**, **latency & token telemetry**, and **modular provider architectures**.
+This repository bridges the gap between ad-hoc prompting and production-grade AI systems by enforcing **strict Pydantic schema validation**, **deterministic fallbacks**, **latency & token telemetry**, **sanitized JSON handling**, and **modular provider architectures**.
 
 ---
 
@@ -22,7 +22,8 @@ This repository bridges the gap between ad-hoc prompting and production-grade AI
 | **Summarization** | Compresses long-context operational logs and incidents with token-efficient prompts. | `app/patterns/summarization.py` | `summarize_cli.py` |
 | **Semantic Similarity** | Computes cosine similarity across text pairs using high-dimensional vector embeddings. | `app/patterns/similarity.py` | `similarity_cli.py` |
 | **Semantic Search** | Ranks local knowledge documents against natural-language queries. | `app/patterns/similarity.py` | `semantic_search.py` |
-| **Retrieval-Augmented Generation (RAG)** | In-memory vector store with chunking, overlap, top-$k$ retrieval, and grounded answer synthesis. | `app/patterns/rag.py` | Programmatic API |
+| **Retrieval-Augmented Generation (RAG)** | In-memory vector store with chunking, overlap, top-$k$ retrieval, and grounded answer synthesis. | `app/patterns/rag.py` | `rag_cli.py` |
+| **Bounded Tool Calling** | Safe, sandboxed tool invocation with Pydantic request validation, markdown fence sanitization, and deterministic execution. | `app/patterns/tool_calling.py` | `tools_cli.py` |
 
 ---
 
@@ -33,12 +34,13 @@ llm-engineering-patterns/
 ├── app/
 │   ├── deterministic/          # Non-LLM fallback logic (e.g., regex extractors)
 │   ├── patterns/               # Core AI design patterns
-│   │   ├── classification.py
-│   │   ├── extraction.py
-│   │   ├── generation.py
+│   │   ├── classification.py   # Intent and error taxonomy
+│   │   ├── extraction.py       # Pydantic entity extraction
+│   │   ├── generation.py       # Constrained text generation
 │   │   ├── rag.py              # In-memory RAG pipeline
 │   │   ├── similarity.py       # Cosine similarity & vector comparison
-│   │   └── summarization.py
+│   │   ├── summarization.py    # Log & document summarization
+│   │   └── tool_calling.py     # Safe bounded tool selection & execution
 │   ├── providers/              # Extensible LLM & Embedding providers
 │   │   ├── base.py             # Abstract base classes & response types
 │   │   ├── embeddings.py       # Ollama embeddings (nomic-embed-text)
@@ -48,16 +50,19 @@ llm-engineering-patterns/
 │   │   ├── extraction.py
 │   │   ├── generation.py
 │   │   ├── rag.py
-│   │   └── summarization.py
+│   │   ├── summarization.py
+│   │   └── tool_calling.py
 │   └── utilities/              # Helpers for telemetry, latency, and profiling
-├── sample_data/                # Sample incident logs and operational data
-├── tests/                      # Comprehensive pytest test suite
+├── sample_data/                # Sample incident logs and operational knowledge docs
+├── tests/                      # Comprehensive pytest test suite (45 unit tests)
 ├── classify_cli.py             # CLI: Classification
 ├── extract_cli.py              # CLI: Extraction
 ├── generate_cli.py             # CLI: Generation
+├── rag_cli.py                  # CLI: Retrieval-Augmented Generation
 ├── semantic_search.py          # CLI: Vector semantic search
 ├── similarity_cli.py           # CLI: Embedding similarity
 ├── summarize_cli.py            # CLI: Log summarization
+├── tools_cli.py                # CLI: Bounded tool calling
 ├── .env.example
 └── README.md
 ```
@@ -66,10 +71,11 @@ llm-engineering-patterns/
 
 ## ⚡ Key Engineering Principles
 
-- **Zero Hallucination through Schemas**: All generative outputs are validated using Pydantic models. Malformed model outputs raise typed exceptions (`ClassificationError`, `RagError`, etc.) rather than silently corrupting data.
+- **Zero Hallucination through Schemas**: All generative outputs are validated using Pydantic models. Malformed model outputs raise typed exceptions (`ClassificationError`, `RagError`, `ToolCallError`, etc.) rather than silently corrupting data.
+- **Robust Model Output Parsing**: Built-in markdown code fence sanitization and fallback JSON extraction prevent parsing errors from model quirks (e.g., trailing backticks or wrapped ```json blocks).
 - **Provider Agnostic**: Core patterns interact with abstract base classes (`BaseModelProvider`), decoupling application logic from any single LLM backend.
 - **Production Observability**: Responses return complete telemetry including `latency_ms`, `input_tokens`, and `output_tokens`.
-- **Hybrid Architectures**: Deterministic heuristics (regex, schema guards) run alongside stochastic LLM operations for cost and latency optimization.
+- **Hybrid & Bounded Architectures**: Deterministic heuristics (regex, safe pre-approved tools) run alongside stochastic LLM operations for safety, cost, and latency optimization.
 
 ---
 
@@ -154,11 +160,24 @@ Summarize operational logs with key takeaways:
 python summarize_cli.py sample_data/incident_log.txt
 ```
 
+### 5. Retrieval-Augmented Generation (RAG)
+Query local Markdown knowledge documents with semantic grounding:
+```bash
+python rag_cli.py "How do I restart the nginx service?"
+```
+
+### 6. Bounded Tool Calling
+Safely request and execute approved local operations without arbitrary shell or code execution:
+```bash
+python tools_cli.py "What is the current status of the payments service?"
+python tools_cli.py "Convert 100 degrees Celsius to Fahrenheit"
+```
+
 ---
 
 ## 🧪 Running Tests
 
-A full suite of unit tests covers each pattern and schema validation:
+A full suite of 45 unit tests covers each pattern, schema validation, and error edge case:
 
 ```bash
 pytest -v
@@ -169,4 +188,3 @@ pytest -v
 ## 🛡️ License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-```
