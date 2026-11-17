@@ -6,7 +6,7 @@ import time
 from dataclasses import asdict, dataclass
 
 from app.deterministic.ip_extractor import extract_first_ipv4
-from app.patterns.llm_extractor import (
+from app.patterns.llm_extraction import (
     LLMExtractionError,
     IPAddressExtraction,
     extract_ip_with_llm,
