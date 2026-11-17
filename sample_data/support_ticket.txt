@@ -1,0 +1,2 @@
+VPN connection fails after the latest client update. Users cannot access
+internal resources, and the client displays a certificate error.

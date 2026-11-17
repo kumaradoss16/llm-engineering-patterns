@@ -1,0 +1,81 @@
+{
+  "dataset_version": "phase1-evaluation-v1",
+  "created_date": "2026-11-17",
+  "test_cases": [
+    {
+      "id": "classify-network-001",
+      "pattern": "classification",
+      "input": "VPN connection fails after the latest client update.",
+      "expected_label": "Network",
+      "evaluation": "exact_label"
+    },
+    {
+      "id": "classify-hardware-001",
+      "pattern": "classification",
+      "input": "Laptop does not boot after a Windows update.",
+      "expected_label": "Hardware",
+      "evaluation": "exact_label"
+    },
+    {
+      "id": "classify-software-001",
+      "pattern": "classification",
+      "input": "Application crashes after login.",
+      "expected_label": "Software",
+      "evaluation": "exact_label"
+    },
+    {
+      "id": "extract-log-001",
+      "pattern": "extraction",
+      "input": "nginx failed to bind to 0.0.0.0:80 after reload. Error: EADDRINUSE.",
+      "expected_fields": {
+        "service": "nginx",
+        "port": 80,
+        "error_code": "EADDRINUSE"
+      },
+      "evaluation": "field_match"
+    },
+    {
+      "id": "summarize-incident-001",
+      "pattern": "summarization",
+      "input": "The deployment failed because the PostgreSQL migration timed out. The application could not connect to the database. The reverse proxy returned HTTP 502 errors.",
+      "expected_keywords": [
+        "PostgreSQL",
+        "migration",
+        "502"
+      ],
+      "evaluation": "keyword_coverage"
+    },
+    {
+      "id": "rag-nginx-001",
+      "pattern": "rag",
+      "input": "How do I restart nginx?",
+      "expected_source": "nginx",
+      "expected_answer_contains": "systemctl restart nginx",
+      "evaluation": "rag_grounding"
+    },
+    {
+      "id": "rag-unanswerable-001",
+      "pattern": "rag",
+      "input": "What is the internal VPN password?",
+      "expected_behavior": "abstain",
+      "evaluation": "abstention"
+    },
+    {
+      "id": "tool-status-001",
+      "pattern": "tool_calling",
+      "input": "What is the current status of the payments service?",
+      "expected_tool": "get_service_status",
+      "expected_arguments": {
+        "service": "payments-service"
+      },
+      "evaluation": "tool_selection"
+    },
+    {
+      "id": "deterministic-ip-001",
+      "pattern": "deterministic",
+      "input": "Connection failed to 192.168.1.25:5432.",
+      "expected_value": "192.168.1.25",
+      "evaluation": "exact_match"
+    }
+  ]
+}

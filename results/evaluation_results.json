@@ -1,0 +1,92 @@
+[
+  {
+    "id": "classify-network-001",
+    "pattern": "classification",
+    "correct": false,
+    "latency_ms": 197021.22,
+    "input_tokens": 93,
+    "output_tokens": 31,
+    "error": null
+  },
+  {
+    "id": "classify-hardware-001",
+    "pattern": "classification",
+    "correct": false,
+    "latency_ms": 47893.61,
+    "input_tokens": 94,
+    "output_tokens": 30,
+    "error": null
+  },
+  {
+    "id": "classify-software-001",
+    "pattern": "classification",
+    "correct": true,
+    "latency_ms": 32243.67,
+    "input_tokens": 89,
+    "output_tokens": 37,
+    "error": null
+  },
+  {
+    "id": "extract-log-001",
+    "pattern": "extraction",
+    "correct": true,
+    "extracted": {
+      "service": "nginx",
+      "port": 80,
+      "error_code": "EADDRINUSE",
+      "ip_address": "0.0.0.0",
+      "version": null,
+      "event": "bind failure after reload"
+    },
+    "latency_ms": 61398.58,
+    "input_tokens": 147,
+    "output_tokens": 66,
+    "error": null
+  },
+  {
+    "id": "summarize-incident-001",
+    "pattern": "summarization",
+    "correct": true,
+    "keyword_coverage": "3/3",
+    "latency_ms": 70159.69,
+    "input_tokens": 153,
+    "output_tokens": 72,
+    "error": null
+  },
+  {
+    "id": "rag-nginx-001",
+    "pattern": "rag",
+    "correct": false,
+    "retrieved_documents": [],
+    "latency_ms": 94027.26,
+    "input_tokens": null,
+    "output_tokens": null,
+    "error": "'expected_answer_container'"
+  },
+  {
+    "id": "rag-unanswerable-001",
+    "pattern": "rag",
+    "correct": false,
+    "retrieved_documents": [],
+    "latency_ms": 74025.92,
+    "input_tokens": null,
+    "output_tokens": null,
+    "error": "RAG response failed schema validation: 2 validation errors for RagAnswer\nsources.0\n  Input should be a valid string [type=string_type, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_type\nsources.1\n  Input should be a valid string [type=string_type, input_value=2, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_type"
+  },
+  {
+    "id": "tool-status-001",
+    "pattern": "tool_calling",
+    "correct": null,
+    "error": "Requires manual or mocked tool call evaluation."
+  },
+  {
+    "id": "deterministic-ip-001",
+    "pattern": "deterministic",
+    "correct": true,
+    "extracted": "192.168.1.25",
+    "latency_ms": 1.23,
+    "input_tokens": null,
+    "output_tokens": null,
+    "error": null
+  }
+]
